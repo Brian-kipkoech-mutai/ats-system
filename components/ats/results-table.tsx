@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Candidate } from "@/lib/types/types";
+
 import {
   MapPin,
   Clock,
@@ -56,7 +57,7 @@ export function ResultsTable({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full ">
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold">Results</h2>
@@ -81,7 +82,7 @@ export function ResultsTable({
         </motion.p>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1  overflow-y-scroll">
         <div className="p-4 space-y-3">
           <AnimatePresence mode="popLayout">
             {isLoading ? (
@@ -139,7 +140,7 @@ export function ResultsTable({
                   onHoverStart={() => setHoveredCandidate(candidate.id)}
                   onHoverEnd={() => setHoveredCandidate(null)}
                   onClick={() => onSelectCandidate(candidate)}
-                  className="relative p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group"
+                  className="relative p-3   bg-white/75 rounded-2xl shadow-lg backdrop-blur-lg border border-white/90"
                 >
                   {/* Rank indicator */}
                   <div className="absolute -left-2 top-3 bg-primary text-primary-foreground text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">

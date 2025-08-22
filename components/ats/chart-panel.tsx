@@ -193,7 +193,7 @@ export function ChatPanel({
       </ScrollArea>
 
       <div className="p-4 border-t bg-inherit   ">
-        <div className="flex items-end gap-2 rounded-2xl border bg-gray-50 px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-amber-gray-300">
+        <div className="flex items-end gap-2 rounded-4xl border bg-gray-50 px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-amber-gray-300">
           <Textarea
             ref={textareaRef}
             value={input}

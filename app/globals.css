@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+ /* we have  to  hide  the  scroll bar */
+::-webkit-scrollbar {
+  display: none;
+}
