@@ -23,6 +23,7 @@ interface ResultsTableProps {
   isLoading?: boolean;
   sortCriteria?: string;
   sortOrder?: "asc" | "desc";
+  onClose:()=>void
 }
 
 export function ResultsTable({
@@ -31,6 +32,7 @@ export function ResultsTable({
   isLoading = false,
   sortCriteria,
   sortOrder,
+  onClose
 }: ResultsTableProps) {
   const [hoveredCandidate, setHoveredCandidate] = useState<string | null>(null);
 
@@ -143,6 +145,7 @@ export function ResultsTable({
                   onHoverEnd={() => setHoveredCandidate(null)}
                   onClick={() => {
                     onSelectCandidate(candidate);
+                    onClose()
                   }}
                   className="relative p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group hover:shadow-2xl"
                 >

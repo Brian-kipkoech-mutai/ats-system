@@ -13,16 +13,16 @@ import type { Candidate, TimelineStep } from "@/lib/types/types";
 export function AtsInterface() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null
-    );
-    const [open, setOpen] = useState<boolean>(false);
+  );
+  const [open, setOpen] = useState<boolean>(false);
   const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([]);
   const [timelineSteps, setTimelineSteps] = useState<TimelineStep[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [sortCriteria, setSortCriteria] = useState<string>("");
-const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    
-     const onClose: () => void = () => setOpen((prev) => !prev);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const onClose: () => void = () => setOpen((prev) => !prev);
 
   useEffect(() => {
     loadCandidatesData().catch(console.error);
@@ -72,22 +72,30 @@ const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   };
 
   return (
-    <div className="container mx-auto h-full flex  py-4 ">
+      <div className="container mx-auto h-full flex  py-4 ">
+          
+          {/* chatpanel */}
       <ChatPanel
         onQuery={handleQuery}
         isProcessing={isProcessing}
         streamingMessage={streamingMessage}
       />
+
+      {/* results table */}
       <ResultsTable
         candidates={filteredCandidates}
         onSelectCandidate={setSelectedCandidate}
         isLoading={isProcessing}
         sortCriteria={sortCriteria}
         sortOrder={sortOrder}
+        onClose={onClose}
       />
 
+      {/* timeline panel */}
       <TimelinePanel steps={timelineSteps} />
 
+
+          {/* candidate details */}
       {selectedCandidate && (
         <CandidateDetails
           onClose={onClose}
