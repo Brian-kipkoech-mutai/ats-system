@@ -145,8 +145,8 @@ export function ChatPanel({
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.type === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-primary text-primary-foreground shadow-xl"
+                    : "bg-muted text-muted-foreground shadow-xl"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -193,7 +193,7 @@ export function ChatPanel({
       </ScrollArea>
 
       <div className="p-4 border-t bg-inherit   ">
-        <div className="flex items-end gap-2 rounded-4xl border bg-gray-50 px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-amber-gray-300">
+        <div className="flex items-end gap-2 rounded-4xl border bg-gray-100 px-3 py-2  focus-within:ring-1 focus-within:ring-amber-gray-100  shadow-md">
           <Textarea
             ref={textareaRef}
             value={input}

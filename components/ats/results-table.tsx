@@ -57,7 +57,8 @@ export function ResultsTable({
   };
 
   return (
-    <div className="flex flex-col h-full ">
+    <div className="flex flex-col h-full">
+      {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold">Results</h2>
@@ -82,7 +83,8 @@ export function ResultsTable({
         </motion.p>
       </div>
 
-      <ScrollArea className="flex-1  overflow-y-scroll">
+      {/* Scrollable results */}
+      <ScrollArea className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-3">
           <AnimatePresence mode="popLayout">
             {isLoading ? (
@@ -125,7 +127,7 @@ export function ResultsTable({
               candidates.map((candidate, index) => (
                 <motion.div
                   key={candidate.id}
-                  layout
+                  layout // parent layout animation
                   layoutId={candidate.id}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -135,12 +137,14 @@ export function ResultsTable({
                     delay: index * 0.05,
                     layout: { duration: 0.3 },
                   }}
-                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   onHoverStart={() => setHoveredCandidate(candidate.id)}
                   onHoverEnd={() => setHoveredCandidate(null)}
-                  onClick={() => onSelectCandidate(candidate)}
-                  className="relative p-3   bg-white/75 rounded-2xl shadow-lg backdrop-blur-lg border border-white/90"
+                  onClick={() => {
+                    onSelectCandidate(candidate);
+                  }}
+                  className="relative p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group hover:shadow-2xl"
                 >
                   {/* Rank indicator */}
                   <div className="absolute -left-2 top-3 bg-primary text-primary-foreground text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium">
@@ -166,6 +170,7 @@ export function ResultsTable({
                           <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.2, delay: 0.2 }}
                             className="text-xs text-muted-foreground"
                           >
                             Click for details
@@ -242,30 +247,22 @@ export function ResultsTable({
                       )}
                     </motion.div>
 
-                    {/* Additional info on hover */}
-                    <AnimatePresence>
-                      {hoveredCandidate === candidate.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="text-xs text-muted-foreground border-t pt-2 mt-2"
-                        >
-                          <div className="grid grid-cols-2 gap-2">
-                            <span>
-                              Available: {candidate.availability_weeks}w
-                            </span>
-                            <span>
-                              Notice: {candidate.notice_period_weeks}w
-                            </span>
-                            <span>
-                              Relocate: {candidate.willing_to_relocate}
-                            </span>
-                            <span>Work: {candidate.work_preference}</span>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {/* Expanding section - stays mounted */}
+                    <motion.div
+                      layout
+                      animate={{
+                        height: hoveredCandidate === candidate.id ? "auto" : 0,
+                        opacity: hoveredCandidate === candidate.id ? 1 : 0,
+                      }}
+                      className="overflow-hidden text-xs text-muted-foreground border-t pt-2 mt-2"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <span>Available: {candidate.availability_weeks}w</span>
+                        <span>Notice: {candidate.notice_period_weeks}w</span>
+                        <span>Relocate: {candidate.willing_to_relocate}</span>
+                        <span>Work: {candidate.work_preference}</span>
+                      </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               ))

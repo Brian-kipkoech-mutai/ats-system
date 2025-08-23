@@ -1,11 +1,25 @@
 "use client";
-
+import { CandidateDetails } from "@/components/ats/candidate-details";
 import { ChatPanel } from "@/components/ats/chart-panel";
 import { ResultsTable } from "@/components/ats/results-table";
 import { TimelinePanel } from "@/components/ats/timeline-panel";
 import { mockCandidates } from "@/lib/types/types";
 import type { TimelineStep } from "@/lib/types/types";
+import { useState } from "react";
+import type { Candidate } from "@/lib/types/types";
 export default function Home() {
+  const [open, setOpen] = useState<boolean>(false);
+
+  const onClose: () => void = () => setOpen((prev) => !prev);
+
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    null
+  );
+  const onSelectCandidate = (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setOpen(true);
+  };
+
   return (
     <main className="h-screen bg-background ">
       <div className="container mx-auto h-full flex  py-4 ">
@@ -16,10 +30,19 @@ export default function Home() {
         />
         <ResultsTable
           candidates={mockCandidates}
-          onSelectCandidate={() => {}}
+          onSelectCandidate={onSelectCandidate}
+           
         />
 
         <TimelinePanel steps={timeLine} />
+
+        {selectedCandidate && (
+          <CandidateDetails
+            onClose={onClose}
+            open={open}
+            candidate={selectedCandidate}
+          />
+        )}
       </div>
     </main>
   );

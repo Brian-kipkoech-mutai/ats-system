@@ -39,7 +39,7 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
         <p className="text-sm text-muted-foreground">Watch the ATS think</p>
       </div>
 
-      <ScrollArea className="flex-1 p-4 space-y-4 overflow-y-scroll ">
+      <ScrollArea className="flex-1 p-4 space-y-4 overflow-y-scroll   ">
         <div className="space-y-4">
           {steps.length === 0 ? (
             <motion.div
