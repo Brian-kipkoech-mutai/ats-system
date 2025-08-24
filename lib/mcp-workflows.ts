@@ -198,6 +198,14 @@ export class MCPWorkflow {
     try {
       const topCandidates = this.state.rankedCandidates.slice(0, 5);
 
+      this.state.speakPayload = {
+        query: this.state.query,
+        candidates: topCandidates,
+        stats: this.state.stats,
+      };
+
+      return this.state;
+
       const response = await fetch("/api/mcp/speak", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -207,6 +215,8 @@ export class MCPWorkflow {
           stats: this.state.stats,
         }),
       });
+
+  
 
       if (!response.ok) {
         const errorText = await response.text();

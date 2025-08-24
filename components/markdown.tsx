@@ -5,7 +5,11 @@ import { Streamdown, type StreamdownProps } from "streamdown";
 type Components = StreamdownProps["components"];
 
 const components: Partial<Components> = {
-  a: ({ href = "", children, ...rest }) => {
+  a: ({
+    href = "",
+    children,
+    ...rest
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
     return (
       <Link
         href={href}

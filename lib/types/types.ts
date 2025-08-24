@@ -61,6 +61,16 @@ export interface MCPThinkResponse {
   rank: RankingPlan;
 }
 
+export interface SpeakPayload {
+  query: string;
+  candidates: Candidate[];
+  stats: {
+    count: number;
+    avg_experience: number;
+    top_skills: string[];
+  };
+}
+
 export interface MCPWorkflowState {
   query: string;
   thinkResponse?: MCPThinkResponse;
@@ -72,6 +82,7 @@ export interface MCPWorkflowState {
     top_skills: string[];
   };
   finalResponse?: string;
+  speakPayload?: SpeakPayload;
 }
 
 /////   mock  data
