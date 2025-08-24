@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 
-import { ChatPanel } from "./ats/chart-panel";
 import { TimelinePanel } from "./ats/timeline-panel";
 import { ResultsTable } from "./ats/results-table";
 import { CandidateDetails } from "./ats/candidate-details";
 import { MCPWorkflow } from "@/lib/mcp-workflows";
 import { loadCandidatesData } from "@/lib/data";
 import type { Candidate, TimelineStep } from "@/lib/types/types";
+import Chat from "./ats/chart-panel";
 
 export function AtsInterface() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
@@ -72,30 +72,35 @@ export function AtsInterface() {
   };
 
   return (
-      <div className="container mx-auto h-full flex  py-4 ">
-          
-          {/* chatpanel */}
-      <ChatPanel
-        onQuery={handleQuery}
-        isProcessing={isProcessing}
-        streamingMessage={streamingMessage}
-      />
+    <div className="container mx-auto h-full grid grid-cols-1 lg:grid-cols-10 ">
+      {/* chatpanel */}
+      <div className="lg:col-span-5 h-full overflow-hidden">
+        {/* <ChatPanel
+          onQuery={handleQuery}
+          isProcessing={isProcessing}
+          streamingMessage={streamingMessage}
+        /> */}
+        <Chat />
+      </div>
 
       {/* results table */}
-      <ResultsTable
-        candidates={filteredCandidates}
-        onSelectCandidate={setSelectedCandidate}
-        isLoading={isProcessing}
-        sortCriteria={sortCriteria}
-        sortOrder={sortOrder}
-        onClose={onClose}
-      />
+      <div className="lg:col-span-3 overflow-hidden">
+        <ResultsTable
+          candidates={filteredCandidates}
+          onSelectCandidate={setSelectedCandidate}
+          isLoading={isProcessing}
+          sortCriteria={sortCriteria}
+          sortOrder={sortOrder}
+          onClose={onClose}
+        />
+      </div>
 
       {/* timeline panel */}
-      <TimelinePanel steps={timelineSteps} />
+      <div className="lg:col-span-2   overflow-hidden">
+        <TimelinePanel steps={timelineSteps} />
+      </div>
 
-
-          {/* candidate details */}
+      {/* candidate details */}
       {selectedCandidate && (
         <CandidateDetails
           onClose={onClose}
