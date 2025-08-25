@@ -88,7 +88,7 @@ const filtered = filterCandidates({ include: { skills: ["react"], location: ["cy
 const ranked = rankCandidates(filtered.map(c => c.id), { primary: "experience", order: "desc" })
 expect(ranked[0].id).toBe("12") // 7 years experience
 expect(ranked[1].id).toBe("5")  // 3 years experience
-
+```
 ## Architecture
 
 ### Project Structure
