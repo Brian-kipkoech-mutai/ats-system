@@ -40,7 +40,7 @@ const ThinkResponseSchema = z.object({
 // Init Gemini (im  using this llm becouse its free 😏 )
 const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY as string;
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,15 +51,63 @@ export async function POST(request: NextRequest) {
     }
 
     const csvHeaders = `id,full_name,title,location,timezone,years_experience,skills,languages,education_level,degree_major,availability_weeks,willing_to_relocate,work_preference,notice_period_weeks,desired_salary_usd,open_to_contract,remote_experience_years,visa_status,citizenships,summary,tags,last_active,linkedin_url`;
-
-    const prompt = `
+ const prompt = `
 You are an ATS (Applicant Tracking System) that helps recruiters find candidates. 
-Given a natural language query, respond ONLY with a JSON object containing filter and ranking plans.
+Given a natural language query, respond ONLY with a JSON object following the schema below.
 
-CSV Headers: ${csvHeaders}
+---
 
-Role-to-Technology Mapping Rules:
-- For specific technologies mentioned (e.g., "Java", "React"), include ONLY those exact skills
+### SCHEMA DEFINITIONS
+
+FilterPlan:
+{
+  "include": {
+    "skills": string[],            // list of skills candidate must have
+    "location": string[],          // candidate locations
+    "experience_min": number,      // minimum years of experience
+    "experience_max": number,      // maximum years of experience
+    "work_preference": ["Remote","Hybrid","Onsite"],
+    "willing_to_relocate": boolean,
+    "visa_status": string[]
+  },
+  "exclude": {
+    "skills": string[],            // skills to exclude
+    "location": string[],          // locations to exclude
+    "visa_status": string[]
+  }
+}
+
+RankingPlan:
+{
+  "primary": "experience" | "salary" | "availability" | "skills_match",
+  "tie_breakers": ("experience" | "salary" | "availability" | "skills_match")[],
+  "order": "asc" | "desc"
+}
+
+ThinkResponse:
+{
+  "filter": FilterPlan,
+  "rank": RankingPlan
+}
+
+---
+
+### DATASET CSV HEADERS (for filtering only)
+id,full_name,title,location,timezone,years_experience,skills,languages,
+education_level,degree_major,availability_weeks,willing_to_relocate,
+work_preference,notice_period_weeks,desired_salary_usd,open_to_contract,
+remote_experience_years,visa_status,citizenships,summary,tags,last_active,linkedin_url
+
+⚠️ IMPORTANT:
+- Use dataset headers ONLY for building filter plans. 
+- Ranking MUST use only the enum values ["experience","salary","availability","skills_match"].
+- Do NOT return "desired_salary_usd" or "years_experience" in the rank object.
+- If a field is not relevant, omit it or use an empty object/array. Do not invent new fields.
+
+---
+
+### Role-to-Technology Mapping Rules:
+- For specific technologies mentioned (e.g., "Java", "React"), include ONLY those exact skills.
 - For general roles WITHOUT specific technologies, use these mappings:
   • Frontend: React, Vue, Angular, JavaScript, TypeScript, Next.js
   • Backend: Node.js, Spring, Java, C#, Go, Rust, Python, Kafka, RabbitMQ
@@ -69,11 +117,15 @@ Role-to-Technology Mapping Rules:
   • Data Scientist: Python, SQL, MongoDB, Kafka, Machine Learning
   • QA: Selenium, Cypress, Jest, Testing
 
-Visa Status Interpretation:
+---
+
+### Visa Status Interpretation:
 - "no visa required", "does not need sponsorship" → include visa_status: ["Citizen", "Permanent Resident", "Work Visa"]
 - "needs visa", "requires sponsorship" → include visa_status: ["Needs Sponsorship"]
 
-Filter Plan Rules:
+---
+
+### Filter Plan Rules:
 - If query mentions specific technologies, use ONLY those (e.g., "Java dev" → skills: ["Java"])
 - If query mentions general roles without specific tech, use the mapping above
 - include: criteria candidates MUST match
@@ -84,14 +136,20 @@ Filter Plan Rules:
 - willing_to_relocate: boolean
 - visa_status: ["Citizen", "Permanent Resident", "Work Visa", "Needs Sponsorship"]
 
-Ranking Plan Rules:
-- primary: main sorting criteria ("experience", "salary", "availability", "skills_match")
+---
+
+### Ranking Plan Rules:
+- primary: MUST be one of exactly ["experience", "salary", "availability", "skills_match"]
 - tie_breakers: additional criteria for breaking ties
 - order: "asc" (lowest first) or "desc" (highest first)
 
-Examples:
+---
+
+### Examples:
+
 Query: "java backend dev with 5+ years experience"
-Response: {
+Response:
+{
   "filter": { 
     "include": { 
       "skills": ["Java"],
@@ -102,7 +160,8 @@ Response: {
 }
 
 Query: "backend engineers"  // No specific tech mentioned
-Response: {
+Response:
+{
   "filter": { 
     "include": { 
       "skills": ["Node.js", "Spring", "Java", "C#", "Go", "Rust", "Python", "Kafka", "RabbitMQ"]
@@ -112,7 +171,8 @@ Response: {
 }
 
 Query: "spring java developers"
-Response: {
+Response:
+{
   "filter": { 
     "include": { 
       "skills": ["Spring", "Java"]
@@ -121,9 +181,12 @@ Response: {
   "rank": { "primary": "experience", "order": "desc" }
 }
 
-Now analyze this query and return JSON only.
-Query: "${query}"
+---
+
+Now analyze this query and return JSON ONLY that follows ThinkResponse strictly.
+Query: " ${query}"
 `;
+
     //  Ask Gemini
     const result = await model.generateContent(prompt);
     const rawText = result.response.text();

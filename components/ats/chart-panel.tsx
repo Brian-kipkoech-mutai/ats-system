@@ -104,7 +104,13 @@ export function ChatPanel({
     restDelta: 0.001,
   });
   return (
-    <div className="flex flex-col    h-screen lg:h-full bg-background border-r  ">
+    <div
+      className={cn("flex flex-col    h-screen lg:h-full bg-background ", {
+        "pt-2 pb-2": messages.length > 0 || isProcessing,
+        "pt-0 pb-0": messages.length === 0 && !isProcessing, // No padding when no messages
+        "border-r": messages.length > 0,
+      })}
+    >
       <motion.div
         className="w-full h-2 pb-2 origin-left bg-gradient-to-r from-gray-200 via-gray-400 to-gray-800  rounded-full"
         style={{ scaleX: smoothProgress }}
