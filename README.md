@@ -93,7 +93,7 @@ expect(ranked[1].id).toBe("5")  // 3 years experience
 
 ### Project Structure
 
-
+```
 ├── app/
 │   ├── api/mcp/          # MCP workflow API endpoints
 │   ├── layout.tsx        # Root layout with fonts
@@ -106,7 +106,7 @@ expect(ranked[1].id).toBe("5")  // 3 years experience
 │   ├── mcp-workflow.ts   # Workflow orchestration
 │   └── types.ts          # TypeScript definitions
 └── __tests__/            # Test files
-
+```
 
 ### Key Technologies
 
