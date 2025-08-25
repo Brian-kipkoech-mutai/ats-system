@@ -16,7 +16,7 @@ A Next.js application that demonstrates transparent AI agent workflows for candi
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- OpenAI API key
+- Google Gemini API key
 
 ### Installation
 
@@ -30,7 +30,7 @@ A Next.js application that demonstrates transparent AI agent workflows for candi
 2. **Set up environment variables:**
    \`\`\`bash
    cp .env.example .env.local
-   # Edit .env.local and add your OpenAI API key
+   # Edit .env.local and add your OpenAI API key/Google Gemini  API key
    \`\`\`
 
 3. **Run the development server:**
