@@ -42,7 +42,9 @@ export function CandidateDetails({
             className="h-full flex flex-col"
           >
             <SheetHeader className="pb-4">
-              <SheetTitle className="text-xl">{candidate.full_name}</SheetTitle>
+              <SheetTitle className="text-xl font-medium">
+                {candidate.full_name}
+              </SheetTitle>
             </SheetHeader>
 
             <ScrollArea className="flex-1 p-4 overflow-y-scroll">
@@ -53,7 +55,7 @@ export function CandidateDetails({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <h3 className="font-semibold mb-3 text-lg">
+                  <h3 className="font-medium mb-3 text-lg">
                     Basic Information
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -102,7 +104,7 @@ export function CandidateDetails({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
-                  <h3 className="font-semibold mb-3 text-lg">Skills</h3>
+                  <h3 className="font-medium mb-3 text-lg">Skills</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.skills.split(";").map((skill, index) => (
                       <motion.div
@@ -128,9 +130,7 @@ export function CandidateDetails({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <h3 className="font-semibold mb-3 text-lg">
-                    Work Preferences
-                  </h3>
+                  <h3 className="font-medium mb-3 text-lg">Work Preferences</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-1">
                       <p className="text-muted-foreground font-medium">
@@ -185,7 +185,7 @@ export function CandidateDetails({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <h3 className="font-semibold mb-3 text-lg">
+                  <h3 className="font-medium mb-3 text-lg">
                     Education & Background
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -231,7 +231,7 @@ export function CandidateDetails({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <h3 className="font-semibold mb-3 text-lg">Summary</h3>
+                    <h3 className="font-medium mb-3 text-lg">Summary</h3>
                     <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
                       <p className="text-sm leading-relaxed">
                         {candidate.summary}
@@ -246,7 +246,7 @@ export function CandidateDetails({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
                 >
-                  <h3 className="font-semibold mb-3 text-lg">
+                  <h3 className="font-medium mb-3 text-lg">
                     Additional Information
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -286,7 +286,7 @@ export function CandidateDetails({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
                   >
-                    <h3 className="font-semibold mb-3 text-lg">Links</h3>
+                    <h3 className="font-medium mb-3 text-lg">Links</h3>
                     <a
                       href={candidate.linkedin_url}
                       target="_blank"

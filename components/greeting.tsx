@@ -13,7 +13,7 @@ export const Greeting = () => {
         transition={{ delay: 0.5 }}
         className="text-2xl font-semibold"
       >
-        Hello there!
+        Chat with ATS-Lite
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}

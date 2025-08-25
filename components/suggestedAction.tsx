@@ -12,7 +12,7 @@ export const SuggestedActions = ({ onQuery }: SuggestedActionsProps) => {
   const suggestedActions = [
     {
       title: "Backend engineers in Germany",
-      label: "Backend engineers in Germany, most experience first",
+      label: "Backend engineers in Germany, most experience first ",
       action: "Backend engineers in Germany, most experience first",
     },
     {
@@ -24,7 +24,7 @@ export const SuggestedActions = ({ onQuery }: SuggestedActionsProps) => {
 
     {
       title: "Full-stack engineers  ",
-      label: "Full-stack engineers available within 2 weeks",
+      label: "Full-stack engineers available within 2 weeks willing to work on-site",
       action: "Find me 5 Full-stack engineers available within 2 weeks",
     },
     {
@@ -51,7 +51,7 @@ export const SuggestedActions = ({ onQuery }: SuggestedActionsProps) => {
           <Button
             variant="ghost"
             onClick={async () => onQuery(suggestedAction.action)}
-            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
+            className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col shadow-lg w-full h-auto justify-start items-start"
           >
             <span className="font-medium">{suggestedAction.title}</span>
             <span className="text-muted-foreground text-wrap">

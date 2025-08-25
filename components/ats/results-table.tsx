@@ -23,7 +23,7 @@ interface ResultsTableProps {
   isLoading?: boolean;
   sortCriteria?: string;
   sortOrder?: "asc" | "desc";
-  onClose:()=>void
+  onClose: () => void;
 }
 
 export function ResultsTable({
@@ -32,7 +32,7 @@ export function ResultsTable({
   isLoading = false,
   sortCriteria,
   sortOrder,
-  onClose
+  onClose,
 }: ResultsTableProps) {
   const [hoveredCandidate, setHoveredCandidate] = useState<string | null>(null);
 
@@ -59,18 +59,10 @@ export function ResultsTable({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-fit max-h-screen lg:h-full">
       {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">Results</h2>
-          {sortCriteria && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {getSortIcon()}
-              <span>{getSortLabel()}</span>
-            </div>
-          )}
-        </div>
+
+      <div className="flex items-center justify-between mb-2 p-4 ">
         <motion.p
           key={candidates.length}
           initial={{ opacity: 0, y: -10 }}
@@ -83,6 +75,12 @@ export function ResultsTable({
                 candidates.length !== 1 ? "s" : ""
               } found`}
         </motion.p>
+        {sortCriteria && (
+          <div className="flex items-center gap-1 text-xs  text-muted-foreground ">
+            {getSortIcon()}
+            <span>{getSortLabel()}</span>
+          </div>
+        )}
       </div>
 
       {/* Scrollable results */}
@@ -145,7 +143,7 @@ export function ResultsTable({
                   onHoverEnd={() => setHoveredCandidate(null)}
                   onClick={() => {
                     onSelectCandidate(candidate);
-                    onClose()
+                    onClose();
                   }}
                   className="relative p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors group hover:shadow-2xl"
                 >
@@ -275,7 +273,7 @@ export function ResultsTable({
       </ScrollArea>
 
       {candidates.length > 0 && (
-        <div className="p-4 border-t">
+        <div className="p-4 ">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Showing top {Math.min(candidates.length, 50)} results</span>
             <Button variant="ghost" size="sm" className="h-6 text-xs">

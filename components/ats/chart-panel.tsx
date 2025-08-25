@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { cn, sanitizeText } from "@/lib/utils"; // optional
 import { Markdown } from "@/components/markdown"; // optional
 import { SparklesIcon } from "../icons";
@@ -9,8 +9,10 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { on } from "events";
 import { SendHorizonal, SendHorizonalIcon } from "lucide-react";
+import { useDebouncedCallback } from "use-debounce";
 import { Greeting } from "../greeting";
 import { SuggestedActions } from "../suggestedAction";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
 // Lightweight message preview for parent Chat
 function PreviewMessage({
   message,
@@ -79,13 +81,41 @@ export function ChatPanel({
   isProcessing: boolean;
 }) {
   const [input, setInput] = useState("");
+  const { containerRef, endRef, scrollToBottom } = useScrollToBottom();
 
+  // ======== Smooth scroll logic for streaming chunks ========
+  const debouncedScroll = useDebouncedCallback(() => {
+    scrollToBottom();
+  }, 100); // wait 100ms after last chunk
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      debouncedScroll();
+    }
+  }, [messages, isProcessing, debouncedScroll]);
+  // =======
+
+  const { scrollYProgress } = useScroll({ container: containerRef });
+
+  // Smooth the progress value
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
   return (
-    <div className="flex flex-col min-w-0 h-dvh bg-background">
+    <div className="flex flex-col    h-screen lg:h-full bg-background border-r  ">
+      <motion.div
+        className="w-full h-2 pb-2 origin-left bg-gradient-to-r from-gray-200 via-gray-400 to-gray-800  rounded-full"
+        style={{ scaleX: smoothProgress }}
+      />
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto py-4 space-y-2">
+      <div
+        className="flex-1 overflow-y-auto py-4 space-y-2 "
+        ref={containerRef}
+      >
         {messages.length === 0 && !isProcessing && (
-          <div className="max-w-3xl mx-auto md:mt-20 px-8 size-full flex flex-col justify-center gap-6">
+          <div className="max-w-3xl mx-auto  px-8 size-full flex flex-col justify-center gap-4 ">
             <Greeting />
             <SuggestedActions onQuery={onQuery} />
           </div>
@@ -97,6 +127,7 @@ export function ChatPanel({
         {isProcessing && (
           <div className="px-4 text-muted-foreground">Thinking...</div>
         )}
+        <div ref={endRef} />
       </div>
 
       {/* Input form */}
@@ -107,10 +138,10 @@ export function ChatPanel({
           onQuery(input);
           setInput("");
         }}
-        className="flex flex-row gap-2 relative items-end w-full px-4 pb-4 "
+        className="flex flex-row gap-2 relative items-end w-full px-4   "
       >
-        <div className="p-4 border-t bg-inherit w-full  ">
-          <div className="flex items-end gap-2 rounded-2xl border bg-gray-50 px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-amber-gray-300">
+        <div className="  bg-inherit w-full max-w-screen-md  mx-auto">
+          <div className="flex items-end gap-2 rounded-4xl  border  bg-gray-50 px-3 py-2 shadow-lg focus-within:ring-1 focus-within:ring-amber-gray-300 ">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -125,7 +156,7 @@ export function ChatPanel({
                   setInput("");
                 }
               }}
-              placeholder="Ask me to find candidates... (⌘+Enter to send)"
+              placeholder="Ask me to find candidates... (Enter to send)"
               className="min-h-[40px] max-h-[120px] flex-1 resize-none border-none bg-transparent focus-visible:ring-0 focus-visible:outline-none shadow-none w-full "
               disabled={isProcessing}
             />

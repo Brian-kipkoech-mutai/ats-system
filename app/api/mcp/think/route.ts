@@ -1,112 +1,160 @@
-// import { google } from "@ai-sdk/google";
-// import { streamText } from "ai";
-// import { type NextRequest } from "next/server";
-// import type { Candidate } from "@/lib/types/types";
+import { type NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { z } from "zod";
 
-// // Allow streaming responses up to 30 seconds
-// export const maxDuration = 30;
+//  Schema definitions
+const FilterPlanSchema = z.object({
+  include: z
+    .object({
+      skills: z.array(z.string()).optional(),
+      location: z.array(z.string()).optional(),
+      experience_min: z.number().optional(),
+      experience_max: z.number().optional(),
+      work_preference: z.array(z.string()).optional(),
+      willing_to_relocate: z.boolean().optional(),
+      visa_status: z.array(z.string()).optional(),
+    })
+    .optional(),
+  exclude: z
+    .object({
+      skills: z.array(z.string()).optional(),
+      location: z.array(z.string()).optional(),
+      visa_status: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
 
-// export async function POST(req: NextRequest) {
-//   try {
-//     const { query, candidates, stats } = await req.json();
+const RankingPlanSchema = z.object({
+  primary: z.enum(["experience", "salary", "availability", "skills_match"]),
+  tie_breakers: z
+    .array(z.enum(["experience", "salary", "availability", "skills_match"]))
+    .optional(),
+  order: z.enum(["asc", "desc"]),
+});
 
-//     if (!query || !candidates) {
-//       return new Response(JSON.stringify({ error: "Missing required data" }), {
-//         status: 400,
-//       });
-//     }
+const ThinkResponseSchema = z.object({
+  filter: FilterPlanSchema,
+  rank: RankingPlanSchema,
+});
 
-//     // Build recruiter-style prompt
-//     const prompt = `
-// You are ATS-Lite, a helpful AI assistant that helps recruiters find candidates.
+// Init Gemini (im  using this llm becouse its free 😏 )
+const API_KEY = process.env.GOOGLE_API_KEY as string;
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-// You should provide a friendly, professional summary of the search results. Include:
-// 1. Brief acknowledgment of the query
-// 2. Key statistics (count, average experience, top skills)
-// 3. Highlight of top 2-3 candidates with their key strengths
-// 4. Any notable insights about the candidate pool
+export async function POST(request: NextRequest) {
+  try {
+    const { query } = await request.json();
 
-// Keep it concise but informative. Use a conversational, professional tone. If no candidates are found, provide helpful suggestions.
+    if (!query || typeof query !== "string") {
+      return NextResponse.json({ error: "Invalid query" }, { status: 400 });
+    }
 
-// Query: "${query}"
+    const csvHeaders = `id,full_name,title,location,timezone,years_experience,skills,languages,education_level,degree_major,availability_weeks,willing_to_relocate,work_preference,notice_period_weeks,desired_salary_usd,open_to_contract,remote_experience_years,visa_status,citizenships,summary,tags,last_active,linkedin_url`;
 
-// Search Results:
-// - Found ${stats?.count || candidates.length} candidates
-// - Average experience: ${stats?.avg_experience || "N/A"} years
-// - Top skills: ${stats?.top_skills?.join(", ") || "Various skills"}
+    const prompt = `
+You are an ATS (Applicant Tracking System) that helps recruiters find candidates. 
+Given a natural language query, respond ONLY with a JSON object containing filter and ranking plans.
 
-// ${
-//   candidates.length > 0
-//     ? `Top candidates:
-// ${candidates
-//   .slice(0, 3)
-//   .map(
-//     (c: Candidate, i: number) =>
-//       `${i + 1}. ${c.full_name} - ${c.title} (${c.years_experience} years, ${
-//         c.location
-//       })
-//    Skills: ${c.skills.split(";").slice(0, 4).join(", ")}
-//    Salary: $${Number.parseInt(c.desired_salary_usd).toLocaleString()}`
-//   )
-//   .join("\n\n")}`
-//     : "No candidates found matching the criteria."
-// }
-//     `;
+CSV Headers: ${csvHeaders}
 
-//     // Use Gemini streaming
-//     const result = streamText({
-//       model: google("gemini-2.5-flash"),
-//       prompt,
-//     });
+Role-to-Technology Mapping Rules:
+- For specific technologies mentioned (e.g., "Java", "React"), include ONLY those exact skills
+- For general roles WITHOUT specific technologies, use these mappings:
+  • Frontend: React, Vue, Angular, JavaScript, TypeScript, Next.js
+  • Backend: Node.js, Spring, Java, C#, Go, Rust, Python, Kafka, RabbitMQ
+  • DevOps: AWS, GCP, Azure, Kubernetes, Docker, Terraform
+  • Full-Stack: React, Vue, Angular, Node.js, Spring, Python
+  • Mobile: React Native, Flutter, iOS, Android
+  • Data Scientist: Python, SQL, MongoDB, Kafka, Machine Learning
+  • QA: Selenium, Cypress, Jest, Testing
 
-//     return result.toUIMessageStreamResponse(); // streams response back to client
-//   } catch (error) {
-//     console.error("Gemini ATS API error:", error);
-//     return new Response(
-//       JSON.stringify({
-//         message:
-//           "I encountered an error while generating the response. Please try your search again.",
-//       }),
-//       { status: 500 }
-//     );
-//   }
-// }
+Visa Status Interpretation:
+- "no visa required", "does not need sponsorship" → include visa_status: ["Citizen", "Permanent Resident", "Work Visa"]
+- "needs visa", "requires sponsorship" → include visa_status: ["Needs Sponsorship"]
 
- import { google } from "@ai-sdk/google";
- import { streamText, UIMessage, convertToModelMessages } from "ai";
+Filter Plan Rules:
+- If query mentions specific technologies, use ONLY those (e.g., "Java dev" → skills: ["Java"])
+- If query mentions general roles without specific tech, use the mapping above
+- include: criteria candidates MUST match
+- skills: array of exact technology names from CSV
+- location: array of location keywords (case-insensitive partial match)
+- experience_min/max: years of experience range
+- work_preference: ["Remote", "Hybrid", "Onsite"]
+- willing_to_relocate: boolean
+- visa_status: ["Citizen", "Permanent Resident", "Work Visa", "Needs Sponsorship"]
 
- // Allow streaming responses up to 30 seconds
- export const maxDuration = 30;
+Ranking Plan Rules:
+- primary: main sorting criteria ("experience", "salary", "availability", "skills_match")
+- tie_breakers: additional criteria for breaking ties
+- order: "asc" (lowest first) or "desc" (highest first)
 
- export async function POST(req: Request) {
-   try {
-     const { messages }: { messages: UIMessage[] } = await req.json();
+Examples:
+Query: "java backend dev with 5+ years experience"
+Response: {
+  "filter": { 
+    "include": { 
+      "skills": ["Java"],
+      "experience_min": 5
+    } 
+  },
+  "rank": { "primary": "experience", "order": "desc" }
+}
 
-     if (!messages || messages.length === 0) {
-       return new Response(JSON.stringify({ error: "No messages provided" }), {
-         status: 400,
-         headers: { "Content-Type": "application/json" },
-       });
-     }
+Query: "backend engineers"  // No specific tech mentioned
+Response: {
+  "filter": { 
+    "include": { 
+      "skills": ["Node.js", "Spring", "Java", "C#", "Go", "Rust", "Python", "Kafka", "RabbitMQ"]
+    } 
+  },
+  "rank": { "primary": "experience", "order": "desc" }
+}
 
-     const result = streamText({
-       model: google("gemini-2.5-flash"),
-       messages: convertToModelMessages(messages),
-     });
+Query: "spring java developers"
+Response: {
+  "filter": { 
+    "include": { 
+      "skills": ["Spring", "Java"]
+    } 
+  },
+  "rank": { "primary": "experience", "order": "desc" }
+}
 
-     return result.toUIMessageStreamResponse();
-   } catch (error: any) {
-     console.error("Gemini API error:", error);
+Now analyze this query and return JSON only.
+Query: "${query}"
+`;
+    //  Ask Gemini
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
+    let cleaned = rawText.trim();
 
-     return new Response(
-       JSON.stringify({
-         error: "Failed to fetch response from Gemini",
-         details: error.message || error.toString(),
-       }),
-       {
-         status: 500,
-         headers: { "Content-Type": "application/json" },
-       }
-     );
-   }
- }
+    // remove ```json or ``` if present
+    cleaned = cleaned
+      .replace(/^```(json)?/, "")
+      .replace(/```$/, "")
+      .trim();
+    let object;
+    try {
+      console.log("Raw response from Gemini:", cleaned);
+      object = ThinkResponseSchema.parse(JSON.parse(cleaned));
+    } catch (err) {
+      console.error("Schema validation failed:", err, "Raw:", cleaned);
+      object = {
+        filter: { include: {} },
+        rank: { primary: "experience", order: "desc" },
+      };
+    }
+
+    return NextResponse.json(object);
+  } catch (error) {
+    console.error("Think API error:", error);
+
+    const fallbackResponse = {
+      filter: { include: {} },
+      rank: { primary: "experience" as const, order: "desc" as const },
+    };
+
+    return NextResponse.json(fallbackResponse);
+  }
+}

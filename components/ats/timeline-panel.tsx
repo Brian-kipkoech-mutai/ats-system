@@ -33,13 +33,11 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full  p-2     ">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Timeline</h2>
+    <div className="flex flex-col h-full  pt-4 l  ">
+      <div className=" ">
         <p className="text-sm text-muted-foreground">Watch the ATS think</p>
       </div>
-
-      <ScrollArea className="flex-1 p-4 space-y-4 overflow-y-scroll   ">
+      <ScrollArea className="flex-1 pt-4 space-y-4 overflow-y-auto  pr-2  ">
         <div className="space-y-4">
           {steps.length === 0 ? (
             <motion.div
@@ -75,7 +73,7 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
                       }}
                     >
                       {step.status === "complete" && (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-green-700" />
                       )}
                       {step.status === "active" && (
                         <motion.div

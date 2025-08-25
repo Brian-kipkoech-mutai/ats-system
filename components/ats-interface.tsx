@@ -9,6 +9,7 @@ import { MCPWorkflow } from "@/lib/mcp-workflows";
 import { loadCandidatesData } from "@/lib/data";
 import type { Candidate, TimelineStep } from "@/lib/types/types";
 import { DefaultChatTransport } from "ai";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function AtsInterface() {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
@@ -50,10 +51,6 @@ export function AtsInterface() {
     }
   };
 
-  useEffect(() => {
-    loadCandidatesData().catch(console.error);
-  }, []);
-
   const { messages, sendMessage } = useChat({
     onFinish: (message) => {
       handleStepUpdate({
@@ -68,15 +65,11 @@ export function AtsInterface() {
     transport: new DefaultChatTransport({ api: "/api/mcp/speak" }),
   });
 
-  // react to new messages
   useEffect(() => {
     if (messages.length === 0) return;
 
     const last = messages[messages.length - 1];
-
-    // Only handle assistant messages
     if (last.role === "assistant") {
-      // Extract text from content parts
       const textContent = last.parts
         .filter((c) => c.type === "text")
         .map((c) => c.text)
@@ -84,7 +77,6 @@ export function AtsInterface() {
 
       setStreamingMessage(textContent);
 
-      // also push into timeline
       setTimelineSteps((prev) => {
         const step: TimelineStep = {
           id: "speak",
@@ -132,43 +124,116 @@ export function AtsInterface() {
     }
   };
 
+  const hasMessages = Array.isArray(messages) && messages.length > 0;
+
+  const baseVariants = {
+    hidden: { opacity: 0, y: 8, scale: 0.995 },
+    show: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -8, scale: 0.995 },
+  };
+
+  // --- INITIAL: chat-only (full width) ---
+  if (!hasMessages) {
+    return (
+      <div className="container mx-auto h-full ">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key="chat-only"
+            layout
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            variants={baseVariants}
+            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full grid grid-cols-1 lg:grid-cols-10"
+          >
+            <motion.div
+              layout
+              className="lg:col-span-10 h-full overflow-y-auto p-4"
+            >
+              <ChatPanel
+                onQuery={handleQuery}
+                isProcessing={isProcessing}
+                messages={messages}
+              />
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // --- AFTER we have messages: show full layout (chat + results + timeline) ---
   return (
-    <div className="container mx-auto h-full grid grid-cols-1 lg:grid-cols-10 ">
-      {/* chatpanel */}
-      <div className="lg:col-span-5 h-full overflow-hidden">
-        {" "}
-        <ChatPanel
-          onQuery={handleQuery}
-          isProcessing={isProcessing}
-          messages={messages}
-        />
-      </div>
+    <div className=" mx-auto h-full ">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key="full-layout"
+          layout
+          initial="hidden"
+          animate="show"
+          exit="exit"
+          variants={baseVariants}
+          transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+          className="h-full grid grid-cols-1 lg:grid-cols-10 gap-4"
+        >
+          {/* CHAT (left) */}
+          <motion.div
+            layout
+            className="lg:col-span-5 h-full overflow-y-auto p-4"
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.28 }}
+          >
+            <ChatPanel
+              onQuery={handleQuery}
+              isProcessing={isProcessing}
+              messages={messages}
+            />
+          </motion.div>
 
-      {/* results table */}
-      <div className="lg:col-span-3 overflow-hidden">
-        {" "}
-        <ResultsTable
-          candidates={filteredCandidates}
-          onSelectCandidate={setSelectedCandidate}
-          isLoading={isProcessing}
-          sortCriteria={sortCriteria}
-          sortOrder={sortOrder}
-          onClose={onClose}
-        />
-      </div>
+          {/* RESULTS (middle) */}
+          <motion.div
+            layout
+            className="lg:col-span-3 overflow-hidden h-full p-2"
+            initial={{ opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 8 }}
+            transition={{ duration: 0.28, delay: 0.03 }}
+          >
+            <ResultsTable
+              candidates={filteredCandidates}
+              onSelectCandidate={setSelectedCandidate}
+              isLoading={isProcessing}
+              sortCriteria={sortCriteria}
+              sortOrder={sortOrder}
+              onClose={onClose}
+            />
+          </motion.div>
 
-      {/* timeline panel */}
-      <div className="lg:col-span-2   overflow-hidden">
-        <TimelinePanel steps={timelineSteps} />
-      </div>
-      {/* candidate details */}
-      {selectedCandidate && (
-        <CandidateDetails
-          onClose={onClose}
-          open={open}
-          candidate={selectedCandidate}
-        />
-      )}
+          {/* TIMELINE / DETAILS (right) */}
+          <motion.div
+            layout
+            className="lg:col-span-2 overflow-hidden h-full p-2"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.32, delay: 0.06 }}
+          >
+            <TimelinePanel steps={timelineSteps} />
+          </motion.div>
+
+          {/* CandidateDetails overlays when selected (keeps same DOM parent) */}
+          {selectedCandidate && (
+            <CandidateDetails
+              onClose={onClose}
+              open={open}
+              candidate={selectedCandidate}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
