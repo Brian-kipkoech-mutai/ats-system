@@ -81,20 +81,19 @@ The test suite includes:
 
 ### Example Test Case
 
-\`\`\`typescript
+ ```typescript
 // Input: "React dev, Cyprus, sort by experience desc"
 // Expectation: candidate #12 appears above #5
 const filtered = filterCandidates({ include: { skills: ["react"], location: ["cyprus"] } })
 const ranked = rankCandidates(filtered.map(c => c.id), { primary: "experience", order: "desc" })
 expect(ranked[0].id).toBe("12") // 7 years experience
 expect(ranked[1].id).toBe("5")  // 3 years experience
-\`\`\`
 
 ## Architecture
 
 ### Project Structure
 
-\`\`\`
+
 ├── app/
 │   ├── api/mcp/          # MCP workflow API endpoints
 │   ├── layout.tsx        # Root layout with fonts
@@ -107,7 +106,7 @@ expect(ranked[1].id).toBe("5")  // 3 years experience
 │   ├── mcp-workflow.ts   # Workflow orchestration
 │   └── types.ts          # TypeScript definitions
 └── __tests__/            # Test files
-\`\`\`
+
 
 ### Key Technologies
 
