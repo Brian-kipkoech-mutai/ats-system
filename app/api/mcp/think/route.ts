@@ -38,7 +38,7 @@ const ThinkResponseSchema = z.object({
 });
 
 // Init Gemini (im  using this llm becouse its free 😏 )
-const API_KEY = process.env.GOOGLE_API_KEY as string;
+const API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY as string;
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
