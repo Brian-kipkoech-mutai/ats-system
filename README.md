@@ -142,7 +142,7 @@ The application is a standard Next.js app and can be deployed to any platform su
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `GOOGLE_GENERATIVE_AI_API_KEY` | OpenAI API key for LLM calls | Yes |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Gemini API key for LLM calls | Yes |
 | `NEXT_PUBLIC_APP_URL` | Application URL for redirects | No |
 
 ## Contributing
