@@ -52,14 +52,26 @@ export function AtsInterface() {
   };
 
   const { messages, sendMessage } = useChat({
-    onFinish: (message) => {
+    onFinish: ({ message }) => {
+      const textContent = message.parts
+        .filter((c) => c.type === "text")
+        .map((c) => c.text)
+        .join("");
+      ///truncate if too long
+
+      const maxLength = 200;
+      const preview =
+        textContent.length > maxLength
+          ? textContent.substring(0, maxLength) + "..."
+          : textContent;
+
       handleStepUpdate({
         id: "speak",
         type: "speaking",
         title: "Generating response",
         timestamp: new Date(),
         status: "complete",
-        data: { message },
+        data: { preview },
       });
     },
     transport: new DefaultChatTransport({ api: "/api/mcp/speak" }),

@@ -33,7 +33,7 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full  pt-4 l  ">
+    <div className="flex flex-col h-full  pt-4  ">
       <div className=" ">
         <p className="text-sm text-muted-foreground">Watch the ATS think</p>
       </div>
@@ -106,7 +106,7 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
                       {step.data && (
                         <button
                           onClick={() => toggleExpanded(step.id)}
-                          className="ml-auto p-1 hover:bg-muted rounded transition-colors"
+                          className="ml-auto p-1 hover:bg-muted rounded transition-colors "
                         >
                           {expandedSteps.has(step.id) ? (
                             <ChevronDown className="h-3 w-3" />
@@ -124,9 +124,9 @@ export function TimelinePanel({ steps }: TimelinePanelProps) {
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
+                          className="overflow-hidden max-w-full"
                         >
-                          <pre className="text-xs bg-muted p-2 rounded mt-2 overflow-x-auto whitespace-pre-wrap">
+                          <pre className="text-xs bg-muted p-2 rounded mt-2 overflow-x-auto whitespace-pre-wrap ">
                             {JSON.stringify(step.data, null, 2)}
                           </pre>
                         </motion.div>
