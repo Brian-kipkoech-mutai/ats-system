@@ -205,32 +205,6 @@ export class MCPWorkflow {
       };
 
       return this.state;
-
-      const response = await fetch("/api/mcp/speak", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: this.state.query,
-          candidates: topCandidates,
-          stats: this.state.stats,
-        }),
-      });
-
-  
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Speak API failed: ${response.status} ${errorText}`);
-      }
-
-      const { message } = await response.json();
-      this.state.finalResponse = message;
-
-      this.onStepUpdate({
-        ...step,
-        status: "complete",
-        data: { message },
-      });
     } catch (error) {
       const fallbackMessage = `Found ${
         this.state.stats?.count || 0

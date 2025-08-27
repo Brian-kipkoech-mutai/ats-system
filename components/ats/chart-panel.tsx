@@ -2,135 +2,93 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { cn, sanitizeText } from "@/lib/utils"; // optional
-import { Markdown } from "@/components/markdown"; // optional
-import { SparklesIcon } from "../icons";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import { on } from "events";
-import { SendHorizonal, SendHorizonalIcon } from "lucide-react";
+import { SendHorizonalIcon } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { Greeting } from "../greeting";
 import { SuggestedActions } from "../suggestedAction";
 import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
-// Lightweight message preview for parent Chat
-function PreviewMessage({
-  message,
-}: {
-  message: { id: string; role: string; parts: any[] };
-}) {
-  return (
-    <AnimatePresence>
-      <motion.div
-        data-testid={`message-${message.role}`}
-        key={message.id}
-        className="w-full mx-auto max-w-3xl px-4 py-2 group/message "
-        initial={{ y: 5, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        data-role={message.role}
-      >
-        <div
-          className={cn(
-            "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
-            {
-              "group-data-[role=user]/message:w-fit": true,
-            }
-          )}
-        >
-          {/* Role indicator (optional) */}
-          {message.role === "assistant" && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
-              <div className="translate-y-px">
-                <SparklesIcon size={14} />
-              </div>
-            </div>
-          )}
+import PreviewMessage from "../preview-message";
 
-          {/* Message content */}
-          <div
-            className={cn("flex flex-col gap-4 text-sm", {
-              "bg-primary text-primary-foreground px-3 py-2 rounded-xl":
-                message.role === "user",
-            })}
-          >
-            {message.role === "user" ? (
-              <div>{JSON.parse(message.parts[0].text).query}</div>
-            ) : (
-              message.parts.map((part, i) =>
-                part.type === "text" ? (
-                  <Markdown key={`${message.id}-${i}`}>
-                    {sanitizeText(part.text)}
-                  </Markdown>
-                ) : null
-              )
-            )}
-          </div>
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
+// default messages param to [] to avoid undefined
 export function ChatPanel({
-  messages,
+  messages = [],
   onQuery,
   isProcessing,
 }: {
-  messages: { id: string; role: string; parts: any[] }[];
+  messages?: { id: string; role: string; parts: any[] }[];
   onQuery: (query: string) => void;
   isProcessing: boolean;
 }) {
   const [input, setInput] = useState("");
   const { containerRef, endRef, scrollToBottom } = useScrollToBottom();
 
-  // ======== Smooth scroll logic for streaming chunks ========
+  // debug: confirm messages length on each render
+  // eslint-disable-next-line no-console
+  console.log("ChatPanel render, messages.length:", messages?.length);
+
   const debouncedScroll = useDebouncedCallback(() => {
     scrollToBottom();
-  }, 100); // wait 100ms after last chunk
+  }, 100);
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if ((messages || []).length > 0) {
       debouncedScroll();
     }
   }, [messages, isProcessing, debouncedScroll]);
-  // =======
 
-  const { scrollYProgress } = useScroll({ container: containerRef });
+  const { scrollYProgress } = useScroll({ container: containerRef as any });
 
-  // Smooth the progress value
   const smoothProgress = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001,
   });
+
   return (
     <div
-      className={cn("flex flex-col h-screen lg:h-full bg-background ", {
-        "border-r": messages.length > 0 || isProcessing,
+      className={cn("flex flex-col h-full bg-background", {
+        "border-r": (messages || []).length > 0 && !!isProcessing,
       })}
     >
       <motion.div
-        className="w-full h-2 pb-2 origin-left bg-gradient-to-r from-gray-200 via-gray-400 to-gray-800  rounded-full"
+        className="w-full h-2 pb-2 origin-left bg-gradient-to-r from-gray-200 via-gray-400 to-gray-800 rounded-full"
         style={{ scaleX: smoothProgress }}
       />
-      {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto py-4 space-y-2 "
-        ref={containerRef}
-      >
-        {messages.length === 0 && !isProcessing && (
-          <div className="max-w-3xl mx-auto  px-8 size-full flex flex-col justify-center gap-4 ">
-            <Greeting />
-            <SuggestedActions onQuery={onQuery} />
+
+      <div className="flex-1 overflow-y-auto py-4 space-y-2" ref={containerRef}>
+        {/* EMPTY STATE: Greeting + SuggestedActions */}
+        <AnimatePresence mode="wait">
+          {(messages || []).length === 0 && !isProcessing && (
+            <motion.div
+              key="empty-state"
+              className="max-w-3xl mx-auto px-8 h-full w-full flex flex-col justify-center gap-4"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.32 }}
+            >
+              <Greeting />
+              <SuggestedActions onQuery={onQuery} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* MESSAGE LIST */}
+        <div>
+          <div >
+            {messages?.map((message) => (
+              <PreviewMessage key={message.id} message={message} />
+            ))}
           </div>
-        )}
-        {messages.map((message) => (
-          <PreviewMessage key={message.id} message={message} />
-        ))}
+        </div>
 
         {isProcessing && (
           <div className="px-4 text-muted-foreground">Thinking...</div>
         )}
+
         <div ref={endRef} />
       </div>
 
@@ -142,10 +100,10 @@ export function ChatPanel({
           onQuery(input);
           setInput("");
         }}
-        className="flex flex-row gap-2 relative items-end w-full px-4   "
+        className="flex flex-row gap-2 relative items-end w-full px-4"
       >
-        <div className="  bg-inherit w-full max-w-screen-md  mx-auto">
-          <div className="flex items-end gap-2 rounded-4xl  border  bg-gray-50 px-3 py-2 shadow-lg focus-within:ring-1 focus-within:ring-amber-gray-300 ">
+        <div className="bg-inherit w-full max-w-screen-md mx-auto">
+          <div className="flex items-end gap-2 rounded-full border bg-gray-50 px-3 py-2 shadow-lg focus-within:ring-1 focus-within:ring-gray-600">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -161,7 +119,7 @@ export function ChatPanel({
                 }
               }}
               placeholder="Ask me to find candidates... (Enter to send)"
-              className="min-h-[40px] max-h-[120px] flex-1 resize-none border-none bg-transparent focus-visible:ring-0 focus-visible:outline-none shadow-none w-full "
+              className="min-h-[40px] max-h-[120px] flex-1 resize-none border-none bg-transparent focus-visible:ring-0 focus-visible:outline-none shadow-none w-full"
               disabled={isProcessing}
             />
             <Button
@@ -172,7 +130,7 @@ export function ChatPanel({
               }}
               disabled={!input.trim() || isProcessing}
               size="icon"
-              className="rounded-full  text-white hover:bg-gray-700 h-10 w-10 flex items-center justify-center"
+              className="rounded-full text-white hover:bg-gray-700 h-10 w-10 flex items-center justify-center"
             >
               <SendHorizonalIcon className="h-5 w-5" />
             </Button>
