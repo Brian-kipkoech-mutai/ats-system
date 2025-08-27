@@ -105,10 +105,8 @@ export function ChatPanel({
   });
   return (
     <div
-      className={cn("flex flex-col    h-screen lg:h-full bg-background ", {
-        "pt-2 pb-2": messages.length > 0 || isProcessing,
-        "pt-0 pb-0": messages.length === 0 && !isProcessing, // No padding when no messages
-        "border-r": messages.length > 0,
+      className={cn("flex flex-col h-screen lg:h-full bg-background ", {
+        "border-r": messages.length > 0 || isProcessing,
       })}
     >
       <motion.div
