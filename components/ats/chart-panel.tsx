@@ -50,7 +50,7 @@ export function ChatPanel({
   return (
     <div
       className={cn("flex flex-col h-full bg-background", {
-        "border-r": (messages || []).length > 0 && !!isProcessing,
+        "border-r": (messages || []).length > 0 ,
       })}
     >
       <motion.div
