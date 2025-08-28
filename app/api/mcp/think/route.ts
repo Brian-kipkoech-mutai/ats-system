@@ -216,34 +216,38 @@ Query: "${query}"
 // ----------------------
 // Helper: clean model output (comprehensive cleaning for Gemini responses)
 // ----------------------
-function cleanModelOutput(raw: string): string {
-  let cleaned = raw.trim();
-  
-  // 1. Remove all non-printable characters that can break JSON parsing
-  cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-  
-  // 2. Remove markdown code fences if present
-  cleaned = cleaned.replace(/^```(json)?\s*/i, '');
-  cleaned = cleaned.replace(/\s*```$/i, '');
-  cleaned = cleaned.trim();
-  
-  // 3. Extract JSON from the response by finding the first { and last }
-  const firstBrace = cleaned.indexOf('{');
-  const lastBrace = cleaned.lastIndexOf('}');
-  
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-  }
-  
-  // 4. Remove any trailing commas or invalid characters after the JSON
-  cleaned = cleaned.replace(/,\s*\]?\s*\}\s*[^}\]]*$/, '}');
-  cleaned = cleaned.replace(/,\s*\}\s*[^}\]]*$/, '}');
-  
-  // 5. Final cleanup: remove any remaining trailing content after JSON
-  cleaned = cleaned.replace(/\s*[^\}]*$/, '');
-  
-  return cleaned.trim();
-}
+ function cleanModelOutput(raw: string): string {
+   let cleaned = raw.trim();
+
+   // 1. Remove all non-printable characters
+   cleaned = cleaned.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+
+   // 2. Remove markdown code fences if present
+   cleaned = cleaned.replace(/^```(json)?\s*/i, "");
+   cleaned = cleaned.replace(/\s*```$/i, "");
+   cleaned = cleaned.trim();
+
+   // 3. Extract JSON from the response by finding the first { and last }
+   const firstBrace = cleaned.indexOf("{");
+   const lastBrace = cleaned.lastIndexOf("}");
+   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+     cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+   }
+
+   // 4. Remove trailing commas before closing braces/brackets
+   cleaned = cleaned.replace(/,\s*([}\]])/g, "$1");
+
+   // 5. Fix over-closed JSON (e.g., "}}}" → "}}")
+   while (cleaned.endsWith("}}}")) {
+     cleaned = cleaned.slice(0, -1);
+   }
+   while (cleaned.endsWith("]]]]")) {
+     cleaned = cleaned.slice(0, -1);
+   }
+
+   return cleaned.trim();
+ }
+
 
 // ----------------------
 // POST handler
