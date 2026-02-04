@@ -27,7 +27,7 @@
      }
 
      const response = await fetch(
-       "http://13.50.108.254:3000/price-reports/images",
+       "http//13.61.134.214:3000/price-reports/images",
        {
          method: "POST",
          headers: {
