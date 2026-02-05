@@ -48,6 +48,7 @@
 
      return NextResponse.json(data, { headers: corsHeaders });
    } catch (error) {
+     console.log("Upload error:", error);
      return NextResponse.json(
        { error: "Upload failed" },
        { status: 500, headers: corsHeaders }
