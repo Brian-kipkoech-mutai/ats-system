@@ -27,14 +27,14 @@
      }
 
      const response = await fetch(
-       "http://13.61.134.214:3000/price-reports/images",
+       "https://lmis.molfr.gov.so/api/price-reports/images",
        {
          method: "POST",
          headers: {
            Authorization: token,
          },
          body: formData,
-       }
+       },
      );
 
      const data = await response.json();
